@@ -1,0 +1,11 @@
+name=bison
+version=3.4.2
+source=(http://ftp.gnu.org/gnu/bison/bison-$version.tar.xz)
+
+build() {
+	cd $name-$version
+
+	./configure --prefix=/tools
+	make -j1
+	make -j1 install
+}

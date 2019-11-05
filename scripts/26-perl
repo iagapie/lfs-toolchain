@@ -1,0 +1,13 @@
+name=perl
+version=5.30.0
+source=(https://www.cpan.org/src/5.0/perl-$version.tar.xz)
+
+build() {
+	cd $name-$version
+
+	sh Configure -des -Dprefix=/tools -Dlibs=-lm -Uloclibpth -Ulocincpth
+	make
+	cp -v perl cpan/podlators/scripts/pod2man /tools/bin
+	mkdir -pv /tools/lib/perl5/$version
+	cp -Rv lib/* /tools/lib/perl5/$version
+}

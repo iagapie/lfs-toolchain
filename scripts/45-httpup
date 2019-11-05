@@ -1,0 +1,10 @@
+name=httpup
+version=0.5.0
+source=(https://crux.nu/files/httpup-$version.tar.xz)
+
+build() {
+	cd $name-$version
+
+	make
+    make prefix=/tools mandir=/tools/share/man install
+}

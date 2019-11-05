@@ -1,0 +1,11 @@
+name=nano
+version=4.5
+source=(https://www.nano-editor.org/dist/v${version::1}/nano-$version.tar.xz)
+
+build() {
+	cd $name-$version
+
+	./configure --prefix=/tools --sysconfdir=/tools/etc --enable-utf8
+	make
+	make install
+}
