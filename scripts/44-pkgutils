@@ -53,7 +53,7 @@ EOF
 
 trap "exit 1" SIGHUP SIGINT SIGQUIT SIGTERM
 
-REPO="/usr/ports/core /usr/ports/extra /usr/ports/xorg"
+REPO="/usr/ports/core /usr/ports/extra /usr/ports/xorg /usr/ports/gnome"
 
 while [ $1 ]; do
 	case $1 in
