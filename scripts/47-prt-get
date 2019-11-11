@@ -1,0 +1,57 @@
+name=prt-get
+version=5.19.3
+source=(https://crux.nu/files/$name-$version.tar.xz)
+
+build() {
+	cd $name-$version
+
+	sed -i 's%sysconfdir="/etc"%sysconfdir="/tools/etc"%' configure.in
+	sed -i 's%/etc/pkgmk.conf%/tools/etc/pkgmk.conf%' src/installtransaction.cpp
+
+	./configure --prefix=/tools
+	make
+	make install
+
+	cat > /tools/etc/prt-get.conf << "EOF"
+###
+### prt-get conf
+###
+
+prtdir /usr/ports/core
+prtdir /usr/ports/extra
+prtdir /usr/ports/xorg
+prtdir /usr/ports/gnome
+prtdir /usr/ports/kde
+
+### use alternate cache file (default: /var/lib/pkg/prt-get.cache
+# cachefile /mnt/nfs/cache
+
+### log options:
+# writelog enabled         # (enabled|disabled)
+# logmode  overwrite       # (append|overwrite)
+# rm_on_success no         # (yes|no)
+logfile  /var/log/pkgbuild/%n.log
+                           # path, %p=path to port dir, %n=port name
+                           #       %v=version, %r=release
+
+### print README information:
+# readme verbose           # (verbose|compact|disabled)
+
+### run pre- and post-installs scripts; yes is equivalent to the
+### --install-scripts option
+runscripts yes            # (no|yes)
+
+### alternative commands
+makecommand      /tools/bin/pkgmk
+addcommand       /tools/bin/pkgadd
+removecommand    /tools/bin/pkgrm
+# runscriptcommand sh
+
+
+### prefer higher versions in sysup / diff
+# preferhigher no      # (yes|no)
+
+### use regexp search
+# useregex no        # (yes|no)
+EOF
+}

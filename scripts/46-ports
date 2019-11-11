@@ -43,49 +43,19 @@ EOF
     
     chmod 755 /tools/etc/ports/drivers/httpup
 
-cat > /tools/etc/ports/core.httpup << "EOF"
+    ports="core extra xorg gnome kde"
+	for p in $ports; do
+        cat <<EOF > /tools/etc/ports/$p.httpup
 #
-# /etc/ports/core.httpup: core's port collection
+# /etc/ports/$p.httpup: $p's port collection
 #
 
-ROOT_DIR=/usr/ports/core
-URL=https://raw.githubusercontent.com/iagapie/lfs-ports/master/core/
+ROOT_DIR=/usr/ports/$p
+URL=https://raw.githubusercontent.com/iagapie/lfs-ports/master/$p/
 
 # End of file
 EOF
 
-cat > /tools/etc/ports/extra.httpup << "EOF"
-#
-# /etc/ports/extra.httpup: extra's port collection
-#
-
-ROOT_DIR=/usr/ports/extra
-URL=https://raw.githubusercontent.com/iagapie/lfs-ports/master/extra/
-
-# End of file
-EOF
-
-cat > /tools/etc/ports/xorg.httpup << "EOF"
-#
-# /etc/ports/xorg.httpup: xorg's port collection
-#
-
-ROOT_DIR=/usr/ports/xorg
-URL=https://raw.githubusercontent.com/iagapie/lfs-ports/master/xorg/
-
-# End of file
-EOF
-
-cat > /tools/etc/ports/gnome.httpup << "EOF"
-#
-# /etc/ports/gnome.httpup: gnome's port collection
-#
-
-ROOT_DIR=/usr/ports/gnome
-URL=https://raw.githubusercontent.com/iagapie/lfs-ports/master/gnome/
-
-# End of file
-EOF
-
-    chmod 644 /tools/etc/ports/{core,extra,xorg,gnome}.httpup
+        chmod 644 /tools/etc/ports/$p.httpup
+	done
 }
