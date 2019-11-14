@@ -5,7 +5,7 @@
 For building a temporary system, run as regular user:
 
 ```bash
-bash build.sh -d /mnt/lfs
+make LFS=/mnt/lfs install
 ```
 
 The script is resume-able, just re-run the script to continue where you left
@@ -15,7 +15,7 @@ The script is resume-able, just re-run the script to continue where you left
 ## Host System Requirements
 
 ```bash
-bash version-check.sh
+make check
 ```
 
 * Bash-3.2 (/bin/sh should be a symbolic or hard link to bash)
