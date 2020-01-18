@@ -1,14 +1,43 @@
-name=curl
-version=7.66.0
-source=(https://curl.haxx.se/download/curl-$version.tar.xz)
+#!/usr/bin/env bash
 
-build() {
-	cd $name-$version
+# vim:syntax=sh filetype=sh
 
-	./configure --prefix=/tools                     \
-            --disable-static                        \
-            --enable-threaded-resolver              \
-            --with-ca-bundle=/tools/etc/ssl/certs/ca-certificates.crt
-    make
-    make install
-}
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=curl
+VERSION=${CURL_VER}
+
+fetch "https://curl.haxx.se/download/curl-$CURL_VER.tar.xz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+	{
+		cd $TMP/$NAME-$VERSION
+
+        ./configure --prefix=/tools                     \
+                --disable-static                        \
+                --enable-threaded-resolver              \
+                --with-ca-bundle=/tools/etc/ssl/certs/ca-certificates.crt
+        make
+        make install
+	}
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

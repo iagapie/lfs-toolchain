@@ -1,25 +1,54 @@
-name=glibc
-version=2.30
-source=(http://ftp.gnu.org/gnu/glibc/glibc-$version.tar.xz)
+#!/usr/bin/env bash
 
-build() {
-	cd $name-$version
+# vim:syntax=sh filetype=sh
 
-	mkdir -v build
-	cd       build
-	
-	../configure                             \
-		  --prefix=/tools                    \
-		  --host=$LFS_TGT                    \
-		  --build=$(../scripts/config.guess) \
-		  --enable-kernel=3.2             \
-		  --with-headers=/tools/include
-	make
-	make install
+set -e
 
-	echo 'int main(){}' > dummy.c
-	$LFS_TGT-gcc dummy.c
-	readelf -l a.out | grep ': /tools'
+source $(dirname $0)/fn
+source $(dirname $0)/version
 
-	rm -v dummy.c a.out
-}
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=glibc
+VERSION=${GLIBC_VER}
+
+fetch "http://ftp.gnu.org/gnu/glibc/glibc-$GLIBC_VER.tar.xz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+	{
+		cd $TMP/$NAME-$VERSION
+
+		mkdir -v build
+		cd       build
+		
+		../configure                             \
+			--prefix=/tools                    \
+			--host=$LFS_TGT                    \
+			--build=$(../scripts/config.guess) \
+			--enable-kernel=3.2             \
+			--with-headers=/tools/include
+		make
+		make install
+
+		echo 'int main(){}' > dummy.c
+		$LFS_TGT-gcc dummy.c
+		readelf -l a.out | grep ': /tools'
+
+		rm -v dummy.c a.out
+	}
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

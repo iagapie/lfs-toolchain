@@ -1,0 +1,51 @@
+# vim:syntax=sh filetype=sh
+
+JOBS=$(nproc)
+MAKEFLAGS="-j ${JOBS}"
+LC_ALL=POSIX
+
+PATH=/tools/bin:/bin:/usr/bin
+LFS=/mnt/lfs
+LFS_TGT=$(uname -m)-lfs-linux-gnu
+
+export LC_ALL LFS LFS_TGT MAKEFLAGS
+
+fname() {
+    echo $(echo $0 | rev | cut -d / -f1 | rev)
+}
+
+fetch() {
+	tarballname=$(echo $1 | rev | cut -d / -f 1 | rev)
+	WGETCMD="wget --no-check-certificate --passive-ftp --tries=3 --waitretry=3 --output-document=$2/$tarballname.partial"
+	WGETRESUME="-c"
+	
+	if [ -f $2/$tarballname ]; then
+		echo "Source file $tarballname found."
+		return 0
+	else
+		if [ -f $2/$tarballname.partial ]; then
+			echo "Resuming $1"
+			$WGETCMD $WGETRESUME $1
+		else
+			mkdir -p "$2"
+			echo "Downloading $1"
+			$WGETCMD $1
+		fi
+	fi
+	
+	if [ $? = 0 ]; then
+		mv $2/$tarballname.partial $2/$tarballname
+	else
+		echo "Failed fetching source: $tarballname"
+		exit 1
+	fi	
+}
+
+extract() {
+    case $1 in
+        *.tar|*.tar.gz|*.tar.Z|*.tgz|*.tar.bz2|*.tbz2|*.tar.xz|*.txz|*.tar.lzma|*.zip|*.rpm)
+            tar xf $1 -C $2 || exit 1;;
+        *)
+            cp $1 $2 || exit 1;;
+    esac
+}

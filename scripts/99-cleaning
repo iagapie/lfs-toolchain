@@ -1,8 +1,10 @@
-name=cleaning
+#!/usr/bin/env bash
 
-build() {
-	strip --strip-debug /tools/lib/* || true
-	/usr/bin/strip --strip-unneeded /tools/{,s}bin/* || true
-	rm -rf /tools{,/share}/{info,man,doc}
-	find /tools/{lib,libexec} -name \*.la -delete
-}
+# vim:syntax=sh filetype=sh
+
+[ "$1" = "fetch" ] && exit 0
+
+# strip --strip-debug /tools/lib/* || true
+/usr/bin/strip --strip-unneeded /tools/{,s}bin/*
+rm -rf /tools{,/share}/{info,man,doc}
+find /tools/{lib,libexec} -name \*.la -delete
