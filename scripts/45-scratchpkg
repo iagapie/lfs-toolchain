@@ -49,6 +49,7 @@ extract "$SRC/$tarballname" "$TMP"
 		sed -i 's:/etc:/tools/etc:g' /tools/bin/updateconf
 		sed -i 's,https://raw.githubusercontent.com/emmett1/ports/master/core,https://raw.githubusercontent.com/iagapie/lfs-ports/master/core,' /tools/etc/scratchpkg.repo
 		
+		echo '' >> /tools/etc/scratchpkg.repo
 		echo 'https://raw.githubusercontent.com/iagapie/lfs-ports/master/core' >> /tools/etc/scratchpkg.repo
 		echo 'https://raw.githubusercontent.com/iagapie/lfs-ports/master/extra' >> /tools/etc/scratchpkg.repo
 		echo 'https://raw.githubusercontent.com/iagapie/lfs-ports/master/xorg' >> /tools/etc/scratchpkg.repo
