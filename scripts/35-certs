@@ -25,10 +25,10 @@ mkdir -p $TMP/cert $LOG $SRC
 cp $SRC/$tarballname $TMP/cert
 
 { time \
-	{
-    cd $TMP/cert
+    {
+        cd $TMP/cert
 
-    cat > make-cert.pl << "EOF"
+	    cat > make-cert.pl << "EOF"
 #!/usr/bin/perl -w
 # Used to generate PEM encoded files from Mozilla certdata.txt.
 # Run as ./make-cert.pl > certificate.crt
@@ -59,13 +59,11 @@ while ( <IN> )
     {
         close( OUT );
         $incert = 0;
-        print "
-
-";
+        print "\n\n";
     }
     elsif ($incert)
     {
-        my @bs = split( /\/ );
+        my @bs = split( /\\/ );
         foreach my $b (@bs)
         {
             chomp $b;
@@ -74,8 +72,8 @@ while ( <IN> )
     }
 }
 EOF
-  chmod +x make-cert.pl
-  cat > make-ca.sh << "EOF"
+        chmod +x make-cert.pl
+        cat > make-ca.sh << "EOF"
 #!/bin/sh
 # Begin make-ca.sh
 # Script to populate OpenSSL's CApath from a bundle of PEM formatted CAs
@@ -153,10 +151,10 @@ fi
 cat certs/*.pem >  ${BUNDLE}
 rm -r "${TEMPDIR}"
 EOF
-    chmod +x make-ca.sh
-    ./make-ca.sh
-    install -v -m644 BLFS-ca-bundle.crt /tools/etc/ssl/certs/ca-certificates.crt
-	}
+        chmod +x make-ca.sh
+        ./make-ca.sh
+        install -v -m644 BLFS-ca-bundle.crt /tools/etc/ssl/certs/ca-certificates.crt
+    }
 } 2>&1 | tee $LOG/$filename.log
 
 [ $PIPESTATUS = 0 ] && echo "$NAME" > /tools/$filename || exit $PIPESTATUS
