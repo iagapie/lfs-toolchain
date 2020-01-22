@@ -61,3 +61,23 @@ $ make check
 * Texinfo-4.7
 * Xz-5.0.0
 * Wget
+
+### If you build on ubuntu
+
+```bash
+$ sudo dpkg-reconfigure dash
+$ sudo apt install                       \
+        build-essential                  \
+        bison                            \
+        file                             \
+        gawk                             \
+        texinfo                          \
+        wget                             \
+        nano                             \
+        git                              \
+        wget                             \
+        curl                             \
+        vim                              \
+        unzip                            \
+        tar
+````
