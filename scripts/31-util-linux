@@ -1,16 +1,45 @@
-name=util-linux
-version=2.34
-source=(https://www.kernel.org/pub/linux/utils/util-linux/v$version/util-linux-$version.tar.xz)
+#!/usr/bin/env bash
 
-build() {
-	cd $name-$version
+# vim:syntax=sh filetype=sh
 
-	./configure --prefix=/tools                \
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=util-linux
+VERSION=${UTIL_LINUX_VER}
+
+fetch "https://www.kernel.org/pub/linux/utils/util-linux/v$UTIL_LINUX_VER/util-linux-$UTIL_LINUX_VER.tar.xz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+    {
+        cd $TMP/$NAME-$VERSION
+
+        ./configure --prefix=/tools        \
             --without-python               \
             --disable-makeinstall-chown    \
             --without-systemdsystemunitdir \
             --without-ncurses              \
             PKG_CONFIG=""
-	make
-	make install
-}
+        make
+        make install
+    }
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

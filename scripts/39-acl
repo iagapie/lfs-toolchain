@@ -1,11 +1,40 @@
-name=acl
-version=2.2.53
-source=(http://download.savannah.gnu.org/releases/acl/acl-$version.tar.gz)
+#!/usr/bin/env bash
 
-build() {
-	cd $name-$version
+# vim:syntax=sh filetype=sh
+
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=acl
+VERSION=${ACL_VER}
+
+fetch "http://download.savannah.gnu.org/releases/acl/acl-$ACL_VER.tar.gz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+	{
+		cd $TMP/$NAME-$VERSION
 	
-	./configure --prefix=/tools --disable-shared
-	make
-	make install
-}
+		./configure --prefix=/tools --disable-shared
+		make
+		make install
+	}
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

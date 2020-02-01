@@ -1,9 +1,10 @@
-LFS=/mnt/lfs
+TMP=${HOME}/lfs-toolchain-build/build
+LOG=${HOME}/lfs-toolchain-build/log
 
 check:
 	sh ./version-check
 
 install:
-	sh ./install -d ${LFS}
+	sh ./install -t ${TMP} -l ${LOG}
 
 .PHONY: check install
