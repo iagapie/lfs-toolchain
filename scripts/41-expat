@@ -1,11 +1,40 @@
-name=expat
-version=2.2.9
-source=(https://prdownloads.sourceforge.net/expat/expat-$version.tar.xz)
+#!/usr/bin/env bash
 
-build() {
-	cd $name-$version
+# vim:syntax=sh filetype=sh
+
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=expat
+VERSION=${EXPAT_VER}
+
+fetch "https://prdownloads.sourceforge.net/expat/expat-$EXPAT_VER.tar.xz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+	{
+		cd $TMP/$NAME-$VERSION
 	
-	./configure --prefix=/tools
-	make
-	make install
-}
+		./configure --prefix=/tools
+		make
+		make install
+	}
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

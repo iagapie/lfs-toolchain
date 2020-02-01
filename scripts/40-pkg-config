@@ -1,13 +1,42 @@
-name=pkg-config
-version=0.29.2
-source=(https://pkg-config.freedesktop.org/releases/pkg-config-$version.tar.gz)
+#!/usr/bin/env bash
 
-build() {
-	cd $name-$version
-    
-    ./configure --prefix=/tools \
-        --with-internal-glib \
-        --disable-host-tool
-	make
-	make install
-}
+# vim:syntax=sh filetype=sh
+
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=pkg-config
+VERSION=${PKG_CONFIG_VER}
+
+fetch "https://pkg-config.freedesktop.org/releases/pkg-config-$PKG_CONFIG_VER.tar.gz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+	{
+		cd $TMP/$NAME-$VERSION
+        
+        ./configure --prefix=/tools \
+            --with-internal-glib \
+            --disable-host-tool
+        make
+        make install
+	}
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

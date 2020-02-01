@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# vim:syntax=sh filetype=sh
+
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=scratchpkg
+VERSION=20200117
+_commit=b5733b2f8ff7c6d21eef07234c75b5303fbe8b01
+
+fetch "https://github.com/emmett1/scratchpkg/archive/$_commit.tar.gz" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP $LOG $SRC
+
+extract "$SRC/$tarballname" "$TMP"
+
+{ time \
+	{
+		cd $TMP/scratchpkg-$_commit
+
+		install -m755 revdep pkgadd pkgdel pkgbuild pkgquery scratch updateconf /tools/bin
+		install -m644 scratchpkg.conf scratchpkg.repo /tools/etc
+
+		install -m644 revdep.conf /tools/etc/revdep.conf
+		
+		# change config path
+		for i in scratch pkgbuild; do
+			sed -i 's:/etc/scratchpkg.conf:/tools/etc/scratchpkg.conf:g' /tools/bin/$i
+		done
+		
+		# change repo path
+		for i in scratch pkgquery; do
+			sed -i 's:/etc/scratchpkg.repo:/tools/etc/scratchpkg.repo:g' /tools/bin/$i
+		done
+
+		sed -i 's:/etc/revdep:/tools/etc/revdep:g' /tools/bin/revdep
+		sed -i 's:/etc:/tools/etc:g' /tools/bin/updateconf
+		sed -i 's,https://raw.githubusercontent.com/emmett1/ports/master/core,https://raw.githubusercontent.com/iagapie/lfs-ports/master/core,' /tools/etc/scratchpkg.repo
+		
+		echo '' >> /tools/etc/scratchpkg.repo
+		echo '/usr/ports/core https://raw.githubusercontent.com/iagapie/lfs-ports/master/core' >> /tools/etc/scratchpkg.repo
+		echo '/usr/ports/extra https://raw.githubusercontent.com/iagapie/lfs-ports/master/extra' >> /tools/etc/scratchpkg.repo
+		echo '/usr/ports/xorg https://raw.githubusercontent.com/iagapie/lfs-ports/master/xorg' >> /tools/etc/scratchpkg.repo
+	}
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME-$VERSION" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP

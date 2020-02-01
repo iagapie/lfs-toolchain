@@ -1,8 +1,34 @@
-name=certs
-source=(http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt)
+#!/usr/bin/env bash
 
-build() {
-	cat > make-cert.pl << "EOF"
+# vim:syntax=sh filetype=sh
+
+set -e
+
+source $(dirname $0)/fn
+source $(dirname $0)/version
+
+filename=$(fname $0)
+
+TMP=${TMP:-/tmp/build}
+LOG=${LOG:-$(dirname $0)/log}
+SRC=${SRC:-$(dirname $0)/src}
+
+NAME=certs
+
+fetch "http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt" "$SRC"
+
+[ "$1" = "fetch" ] && exit 0
+
+rm -fr $TMP
+mkdir -p $TMP/cert $LOG $SRC
+
+cp $SRC/$tarballname $TMP/cert
+
+{ time \
+    {
+        cd $TMP/cert
+
+	    cat > make-cert.pl << "EOF"
 #!/usr/bin/perl -w
 # Used to generate PEM encoded files from Mozilla certdata.txt.
 # Run as ./make-cert.pl > certificate.crt
@@ -46,8 +72,8 @@ while ( <IN> )
     }
 }
 EOF
-  chmod +x make-cert.pl
-  cat > make-ca.sh << "EOF"
+        chmod +x make-cert.pl
+        cat > make-ca.sh << "EOF"
 #!/bin/sh
 # Begin make-ca.sh
 # Script to populate OpenSSL's CApath from a bundle of PEM formatted CAs
@@ -125,7 +151,12 @@ fi
 cat certs/*.pem >  ${BUNDLE}
 rm -r "${TEMPDIR}"
 EOF
-	chmod +x make-ca.sh
-	./make-ca.sh
-	install -v -m644 BLFS-ca-bundle.crt /tools/etc/ssl/certs/ca-certificates.crt
-}
+        chmod +x make-ca.sh
+        ./make-ca.sh
+        install -v -m644 BLFS-ca-bundle.crt /tools/etc/ssl/certs/ca-certificates.crt
+    }
+} 2>&1 | tee $LOG/$filename.log
+
+[ $PIPESTATUS = 0 ] && echo "$NAME" > /tools/$filename || exit $PIPESTATUS
+
+rm -fr $TMP
